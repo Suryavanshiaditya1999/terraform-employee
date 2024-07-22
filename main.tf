@@ -980,7 +980,7 @@ resource "aws_lb_listener_rule" "salary_rule" {
 }
 
 
-# launch template for attendance
+# launch template for salary
 
 resource "aws_launch_template" "salary_launch_template" {
   name = "salary-template"
@@ -1015,7 +1015,7 @@ resource "aws_launch_template" "salary_launch_template" {
 }
 
 
-# auto scaling for attendance
+# auto scaling for salary
 
 resource "aws_autoscaling_group" "salary_autoscaling" {
   name                      = "salary-autoscale"
@@ -1132,7 +1132,7 @@ resource "aws_lb_listener_rule" "employee_rule" {
 }
 
 
-# launch template for attendance
+# launch template for employee
 
 resource "aws_launch_template" "employee_launch_template" {
   name = "employee-template"
@@ -1167,7 +1167,7 @@ resource "aws_launch_template" "employee_launch_template" {
 }
 
 
-# auto scaling for attendance
+# auto scaling for employee
 
 resource "aws_autoscaling_group" "employee_autoscaling" {
   name                      = "employee-autoscale"
