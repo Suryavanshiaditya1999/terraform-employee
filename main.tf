@@ -10,7 +10,7 @@ resource "aws_vpc" "ot_microservices_dev" {
 resource "aws_subnet" "public_subnet_1" {
  vpc_id            = aws_vpc.ot_microservices_dev.id
  cidr_block        = "10.0.0.0/28"
- availability_zone = "us-east-2a"
+ availability_zone = "us-east-1a"
  map_public_ip_on_launch = true
  tags = {
    Name = "Public Subnet 1"
@@ -20,7 +20,7 @@ resource "aws_subnet" "public_subnet_1" {
 resource "aws_subnet" "public_subnet_2" {
  vpc_id            = aws_vpc.ot_microservices_dev.id
  cidr_block        = "10.0.0.16/28"
- availability_zone = "us-east-2b"
+ availability_zone = "us-east-1b"
  map_public_ip_on_launch = true
  tags = {
    Name = "Public Subnet 2"
@@ -30,7 +30,7 @@ resource "aws_subnet" "public_subnet_2" {
 resource "aws_subnet" "frontend_subnet" {
  vpc_id            = aws_vpc.ot_microservices_dev.id
  cidr_block        = "10.0.0.32/28"
- availability_zone = "us-east-2a"
+ availability_zone = "us-east-1a"
  tags = {
    Name = "Frontend Subnet"
  }
@@ -39,7 +39,7 @@ resource "aws_subnet" "frontend_subnet" {
 resource "aws_subnet" "application_subnet" {
  vpc_id            = aws_vpc.ot_microservices_dev.id
  cidr_block        = "10.0.0.48/28"
- availability_zone = "us-east-2a"
+ availability_zone = "us-east-1a"
  tags = {
    Name = "Application Subnet"
  }
@@ -48,7 +48,7 @@ resource "aws_subnet" "application_subnet" {
 resource "aws_subnet" "database_subnet" {
  vpc_id            = aws_vpc.ot_microservices_dev.id
  cidr_block        = "10.0.0.64/28"
- availability_zone = "us-east-2a"
+ availability_zone = "us-east-1a"
  tags = {
    Name = "Database Subnet"
  }
@@ -176,6 +176,15 @@ resource "aws_network_acl" "public_nacl" {
     to_port    = 22
   }
 
+    egress {
+    protocol   = "tcp"
+    rule_no    = 120
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
+  }
+
   tags = {
     Name = "Public NACL"
   }
@@ -230,7 +239,7 @@ resource "aws_network_acl" "database_nacl" {
     protocol   = "tcp"
     rule_no    = 130
     action     = "allow"
-    cidr_block = "0.0.0.0/0"
+    cidr_block = "10.0.0.48/28"
     from_port  = 9042
     to_port    = 9042
   }
@@ -250,15 +259,6 @@ resource "aws_network_acl" "database_nacl" {
     action     = "allow"
     cidr_block = "10.0.0.48/28"
     from_port  = 1024
-    to_port    = 65535
-  }
-
-   egress {
-    protocol   = "tcp"
-    rule_no    = 120
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 0
     to_port    = 65535
   }
 
@@ -302,7 +302,7 @@ resource "aws_network_acl" "frontend_nacl" {
     protocol   = "tcp"
     rule_no    = 140
     action     = "allow"
-    cidr_block = "10.0.0.48/28"
+    cidr_block = "10.0.0.16/28"
     from_port  = 3000
     to_port    = 3000
   }
@@ -350,16 +350,6 @@ resource "aws_network_acl_association" "nacl_frontend_assoscition" {
 resource "aws_network_acl" "application_nacl" {
   vpc_id = aws_vpc.ot_microservices_dev.id
 
-
-  ingress {
-    protocol   = "tcp"
-    rule_no    = 10
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 0
-    to_port    = 65535
-  }
-
    ingress {
     protocol   = "tcp"
     rule_no    = 100
@@ -391,48 +381,11 @@ resource "aws_network_acl" "application_nacl" {
     protocol   = "tcp"
     rule_no    = 130
     action     = "allow"
-    cidr_block = "10.0.0.32/28"
-    from_port  = 8080
-    to_port    = 8080
-  }
-
-  ingress {
-    protocol   = "tcp"
-    rule_no    = 140
-    action     = "allow"
-    cidr_block = "10.0.0.0/28"
-    from_port  = 443
-    to_port    = 443  
-  }
-
-   ingress {
-    protocol   = "tcp"
-    rule_no    = 150
-    action     = "allow"
-    cidr_block = "10.0.0.16/28"
-    from_port  = 443
-    to_port    = 443  
-  }
-
-   ingress {
-    protocol   = "tcp"
-    rule_no    = 160
-    action     = "allow"
-    cidr_block = "10.0.0.32/28"
-    from_port  = 443
-    to_port    = 443  
-  }
-
-
-   egress {
-    protocol   = "tcp"
-    rule_no    = 1
-    action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 0
-    to_port    = 65535
+    from_port  = 1024
+    to_port    = 65535 
   }
-  
+
    egress {
     protocol   = "tcp"
     rule_no    = 100
@@ -446,19 +399,11 @@ resource "aws_network_acl" "application_nacl" {
     protocol   = "tcp"
     rule_no    = 110
     action     = "allow"
-    cidr_block = "10.0.0.0/28"
+    cidr_block = "0.0.0.0/0"
     from_port  = 1024 
     to_port    = 65535
   }
 
-   egress {
-    protocol   = "tcp"
-    rule_no    = 120
-    action     = "allow"
-    cidr_block = "10.0.0.16/28"
-    from_port  = 1024 
-    to_port    = 65535
-  }
 
 
   tags = {
@@ -543,11 +488,11 @@ resource "aws_security_group" "bastion_security_group" {
 
 resource "aws_instance" "bastion_instance" {
   # ami to be replaced with actual bastion ami
-  ami           = "ami-0d0abab1eb1469291"
+  ami           = "ami-04a81a99f5ec58529"
   subnet_id = aws_subnet.public_subnet_1.id
   vpc_security_group_ids = [aws_security_group.bastion_security_group.id]
   instance_type = "t2.micro"
-  key_name = "devinfra"
+  key_name = "DevInfraAditya"
 
   tags = {
     Name = "Bastion"
@@ -622,36 +567,16 @@ resource "aws_security_group" "frontend_security_group" {
 }
 
 
-# frontend instance
-
-resource "aws_instance" "frontend_instance" {
-  # ami to be replaced
-  ami           = "ami-05eb8291d90fc00c8"
-  subnet_id = aws_subnet.frontend_subnet.id
-  key_name = "devinfra"
-  vpc_security_group_ids = [ aws_security_group.frontend_security_group.id ]
-  instance_type = "t2.micro"
-
-  tags = {
-    Name = "Frontend"
-  }
-}
-
 # target group and attachment
 
-resource "aws_lb_target_group" "frotend_target_group" {
-  name     = "tf-example-lb-tg"
-  port     = 80
-  protocol = "HTTP"
-  target_type = "instance"
-  vpc_id   = aws_vpc.ot_microservices_dev.id
-}
 
-resource "aws_lb_target_group_attachment" "frontend_target_group_attachment" {
-  target_group_arn = aws_lb_target_group.frotend_target_group.arn
-  target_id        = aws_instance.frontend_instance.id
-  port             = 3000
-}
+
+# resource "aws_lb_target_group_attachment" "frontend_target_group_attachment" {
+#   depends_on = [ aws_lb.test ]
+#   target_group_arn = aws_lb_target_group.frotend_target_group.arn
+#   target_id        = aws_lb.test.arn
+#   port             = 3000
+# }
 
 # load balancer
 
@@ -662,6 +587,16 @@ resource "aws_lb" "test" {
   security_groups    = [aws_security_group.alb_security_group.id]
   subnets            = [aws_subnet.public_subnet_1.id , aws_subnet.public_subnet_2.id]
 }
+
+
+resource "aws_lb_target_group" "frotend_target_group" {
+  name     = "frontend-target-group"
+  port     = 3000
+  protocol = "HTTP"
+  target_type = "instance"
+  vpc_id   = aws_vpc.ot_microservices_dev.id
+}
+
 
 resource "aws_lb_listener" "front_end" {
   load_balancer_arn = aws_lb.test.arn
@@ -697,9 +632,10 @@ resource "aws_launch_template" "frontend_launch_template" {
     security_groups             = [aws_security_group.frontend_security_group.id]
   }
 
-  key_name      = "devinfra"
-  # ami to be replaced with actual ami currently not right
-  image_id      = "ami-05eb8291d90fc00c8"
+  key_name      = "DevInfraAditya"
+  # ami to be replaced with actual ami currently not right0
+  image_id      = "ami-0dd996798fdc2fe23"
+ 
   instance_type = "t2.micro"
 
   tag_specifications {
@@ -716,8 +652,8 @@ resource "aws_launch_template" "frontend_launch_template" {
 resource "aws_autoscaling_group" "frontend_autoscaling" {
   name                      = "frontend-autoscale"
   max_size                  = 2
-  min_size                  = 0
-  desired_capacity = 0
+  min_size                  = 1
+  desired_capacity = 1
   health_check_grace_period = 300
   launch_template {
     id      = aws_launch_template.frontend_launch_template.id
@@ -727,7 +663,8 @@ resource "aws_autoscaling_group" "frontend_autoscaling" {
   target_group_arns = [aws_lb_target_group.frotend_target_group.arn]
 }
 
-resource "aws_autoscaling_policy" "bat" {
+
+resource "aws_autoscaling_policy" "frontend_autoscaling_policy" {
   name                   = "frontend-autoscaling-policy"
   policy_type            = "TargetTrackingScaling"
   adjustment_type        = "ChangeInCapacity"
@@ -778,36 +715,21 @@ resource "aws_security_group" "attendance_security_group" {
   }
 }
 
-# instnace
-
-resource "aws_instance" "attendance_instance" {
-  # ami to be replaced with actual bastion ami
-  ami           = "ami-0646a2db03a898068"
-  subnet_id = aws_subnet.database_subnet.id
-  vpc_security_group_ids = [aws_security_group.attendance_security_group.id]
-  instance_type = "t2.micro"
-  key_name = "backend"
-
-  tags = {
-    Name = "Attendance"
-  }
-}
-
 # target group and attachment
 
 resource "aws_lb_target_group" "attendance_target_group" {
   name     = "attendnace-tg"
-  port     = 80
+  port     = 8080
   protocol = "HTTP"
   target_type = "instance"
   vpc_id   = aws_vpc.ot_microservices_dev.id
 }
 
-resource "aws_lb_target_group_attachment" "attendance_target_group_attachment" {
-  target_group_arn = aws_lb_target_group.attendance_target_group.arn
-  target_id        = aws_instance.attendance_instance.id
-  port             = 8080
-}
+# resource "aws_lb_target_group_attachment" "attendance_target_group_attachment" {
+#   target_group_arn = aws_lb_target_group.attendance_target_group.arn
+#   target_id        = aws_lb.test.arn
+#   port             = 8080
+# }
 
 # listener rule
 
@@ -848,9 +770,9 @@ resource "aws_launch_template" "attendance_launch_template" {
     security_groups             = [aws_security_group.attendance_security_group.id]
   }
 
-  key_name      = "backend"
+  key_name      = "Backe"
   # ami to be replaced with actual ami currently not right
-  image_id      = "ami-05eb8291d90fc00c8"
+  image_id      = "ami-0af21392da107ca6f"
   instance_type = "t2.micro"
 
   tag_specifications {
@@ -868,8 +790,8 @@ resource "aws_launch_template" "attendance_launch_template" {
 resource "aws_autoscaling_group" "attendance_autoscaling" {
   name                      = "attendance-autoscale"
   max_size                  = 2
-  min_size                  = 0
-  desired_capacity = 0
+  min_size                  = 1
+  desired_capacity = 1
   health_check_grace_period = 300
   launch_template {
     id      = aws_launch_template.attendance_launch_template.id
@@ -896,7 +818,6 @@ resource "aws_autoscaling_policy" "attendance" {
 }
 
 # SALARY
-
 
 
 resource "aws_security_group" "salary_security_group" {
@@ -930,42 +851,21 @@ resource "aws_security_group" "salary_security_group" {
   }
 }
 
-# instnace
-
-resource "aws_instance" "salary_instance" {
-  # ami to be replaced with actual bastion ami
-  ami           = "ami-0ea8cf939c4f34d5d"
-  subnet_id = aws_subnet.application_subnet.id
-  vpc_security_group_ids = [aws_security_group.salary_security_group.id]
-  instance_type = "t2.micro"
-  key_name = "backend"
-
-  tags = {
-    Name = "Salary"
-  }
-}
-
 # target group and attachment
 
 resource "aws_lb_target_group" "salary_target_group" {
   name     = "salary-tg"
-  port     = 80
+  port     = 8080
   protocol = "HTTP"
   target_type = "instance"
   vpc_id   = aws_vpc.ot_microservices_dev.id
-}
-
-resource "aws_lb_target_group_attachment" "salary_target_group_attachment" {
-  target_group_arn = aws_lb_target_group.salary_target_group.arn
-  target_id        = aws_instance.salary_instance.id
-  port             = 8080
 }
 
 # listener rule
 
 resource "aws_lb_listener_rule" "salary_rule" {
   listener_arn = aws_lb_listener.front_end.arn
-  priority     = 5
+  priority     = 6
 
   action {
     type             = "forward"
@@ -1000,9 +900,9 @@ resource "aws_launch_template" "salary_launch_template" {
     security_groups             = [aws_security_group.salary_security_group.id]
   }
 
-  key_name      = "backend"
+  key_name      = "Backe"
   # ami to be replaced with actual ami currently not right
-  image_id      = "ami-0ea8cf939c4f34d5d"
+  image_id      = "ami-0fc5d03e590c8e817"
   instance_type = "t2.micro"
 
   tag_specifications {
@@ -1020,8 +920,8 @@ resource "aws_launch_template" "salary_launch_template" {
 resource "aws_autoscaling_group" "salary_autoscaling" {
   name                      = "salary-autoscale"
   max_size                  = 2
-  min_size                  = 0
-  desired_capacity = 0
+  min_size                  = 1
+  desired_capacity = 1
   health_check_grace_period = 300
   launch_template {
     id      = aws_launch_template.salary_launch_template.id
@@ -1082,36 +982,17 @@ resource "aws_security_group" "employee_security_group" {
   }
 }
 
-# instnace
-
-resource "aws_instance" "employee_instance" {
-  # ami to be replaced with actual bastion ami
-  ami           = "ami-0cc489ff5815b317c"
-  subnet_id = aws_subnet.application_subnet.id
-  vpc_security_group_ids = [aws_security_group.employee_security_group.id]
-  instance_type = "t2.micro"
-  key_name = "backend"
-
-  tags = {
-    Name = "employee"
-  }
-}
 
 # target group and attachment
 
 resource "aws_lb_target_group" "employee_target_group" {
   name     = "employee-tg"
-  port     = 80
+  port     = 8080
   protocol = "HTTP"
   target_type = "instance"
   vpc_id   = aws_vpc.ot_microservices_dev.id
 }
 
-resource "aws_lb_target_group_attachment" "employee_target_group_attachment" {
-  target_group_arn = aws_lb_target_group.employee_target_group.arn
-  target_id        = aws_instance.employee_instance.id
-  port             = 8080
-}
 
 # listener rule
 
@@ -1132,7 +1013,7 @@ resource "aws_lb_listener_rule" "employee_rule" {
 }
 
 
-# launch template for employee
+# launch template for attendance
 
 resource "aws_launch_template" "employee_launch_template" {
   name = "employee-template"
@@ -1152,9 +1033,9 @@ resource "aws_launch_template" "employee_launch_template" {
     security_groups             = [aws_security_group.employee_security_group.id]
   }
 
-  key_name      = "backend"
+  key_name      = "Backe"
   # ami to be replaced with actual ami currently not right
-  image_id      = "ami-0cc489ff5815b317c"
+  image_id      = "ami-0cdb3bfeb9314c5f5"
   instance_type = "t2.micro"
 
   tag_specifications {
@@ -1169,11 +1050,11 @@ resource "aws_launch_template" "employee_launch_template" {
 
 # auto scaling for employee
 
-resource "aws_autoscaling_group" "employee_autoscaling" {
+resource "aws_autoscaling_group" "employee_autoscaling_launch_template" {
   name                      = "employee-autoscale"
   max_size                  = 2
-  min_size                  = 0
-  desired_capacity = 0
+  min_size                  = 1
+  desired_capacity = 1
   health_check_grace_period = 300
   launch_template {
     id      = aws_launch_template.employee_launch_template.id
@@ -1188,7 +1069,7 @@ resource "aws_autoscaling_policy" "employee_scaling_policy" {
   policy_type            = "TargetTrackingScaling"
   adjustment_type        = "ChangeInCapacity"
   estimated_instance_warmup = 300
-  autoscaling_group_name = aws_autoscaling_group.salary_autoscaling.name
+  autoscaling_group_name = aws_autoscaling_group.employee_autoscaling_launch_template.name
 
   target_tracking_configuration {
     predefined_metric_specification {
@@ -1200,5 +1081,189 @@ resource "aws_autoscaling_policy" "employee_scaling_policy" {
 }
 
 
+# REDIS INFRA
 
 
+resource "aws_security_group" "redis_security_group" {
+  vpc_id = aws_vpc.ot_microservices_dev.id
+  name = "redis-security-group"
+
+  tags = {
+    Name = "redis-security-group"
+  }
+  
+  ingress {
+    from_port        = 6379
+    to_port          = 6379
+    protocol         = "tcp"
+    security_groups = [aws_security_group.attendance_security_group.id]
+  }
+
+  ingress {
+    from_port        = 6379
+    to_port          = 6379
+    protocol         = "tcp"
+    security_groups = [aws_security_group.employee_security_group.id]
+  }
+
+  ingress {
+    from_port        = 6379
+    to_port          = 6379
+    protocol         = "tcp"
+    security_groups = [aws_security_group.salary_security_group.id]
+  }
+
+  ingress {
+    from_port        = 22
+    to_port          = 22
+    protocol         = "tcp"
+    security_groups = [aws_security_group.bastion_security_group.id]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    # ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
+
+
+# redis instance
+
+resource "aws_instance" "redis_instance" {
+  # ami to be replaced with actual bastion ami
+  ami           = "ami-03a540375661e02b7"
+  subnet_id = aws_subnet.database_subnet.id
+  vpc_security_group_ids = [aws_security_group.redis_security_group.id]
+  instance_type = "t2.micro"
+  key_name = "Backe"
+
+  tags = {
+    Name = "Redis"
+  }
+}
+
+
+# POSTGRESS
+
+# postgres security
+
+resource "aws_security_group" "postgres_security_group" {
+  vpc_id = aws_vpc.ot_microservices_dev.id
+  name = "postgres-security-group"
+
+  tags = {
+    Name = "postgres-security-group"
+  }
+  
+  ingress {
+    from_port        = 5432
+    to_port          = 5432
+    protocol         = "tcp"
+    security_groups = [aws_security_group.attendance_security_group.id]
+  }
+
+  ingress {
+    from_port        = 5432
+    to_port          = 5432
+    protocol         = "tcp"
+    security_groups = [aws_security_group.redis_security_group.id]
+  }
+
+  ingress {
+    from_port        = 22
+    to_port          = 22
+    protocol         = "tcp"
+    security_groups = [aws_security_group.bastion_security_group.id]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    # ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
+
+# postgres instance
+
+resource "aws_instance" "postgres_instance" {
+  # ami to be replaced with actual ami
+  ami           = "ami-015c9f477cf77b48f"
+  subnet_id = aws_subnet.database_subnet.id
+  vpc_security_group_ids = [aws_security_group.postgres_security_group.id]
+  instance_type = "t2.micro"
+  key_name = "Backe"
+
+  tags = {
+    Name = "Postgres"
+  }
+}
+
+# scylla db
+
+resource "aws_security_group" "syclla_security_group" {
+  vpc_id = aws_vpc.ot_microservices_dev.id
+  name = "syclla-security-group"
+
+  tags = {
+    Name = "syclla-security-group"
+  }
+  
+  ingress {
+    from_port        = 9042
+    to_port          = 9042
+    protocol         = "tcp"
+    security_groups = [aws_security_group.redis_security_group.id]
+  }
+
+  ingress {
+    from_port        = 9042
+    to_port          = 9042
+    protocol         = "tcp"
+    security_groups = [aws_security_group.employee_security_group.id]
+  }
+
+  ingress {
+    from_port        = 9042
+    to_port          = 9042
+    protocol         = "tcp"
+    security_groups = [aws_security_group.salary_security_group.id]
+  }
+
+  ingress {
+    from_port        = 22
+    to_port          = 22
+    protocol         = "tcp"
+    security_groups = [aws_security_group.bastion_security_group.id]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    # ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
+
+# postgres instance
+
+resource "aws_instance" "syclla_instance" {
+  # ami to be replaced with actual ami
+  ami           = "ami-0c9826bbab4a4e364"
+  subnet_id = aws_subnet.database_subnet.id
+  vpc_security_group_ids = [aws_security_group.syclla_security_group.id]
+  instance_type = "t2.medium"
+  key_name = "Backe"
+
+  tags = {
+    Name = "syclla"
+  }
+}
